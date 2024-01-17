@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app-pre-deploy-jobs
+spec:
+  template:
+    metadata:
+      name: app-pre-deploy-jobs
+    spec:
+      initContainers:
+        - name: db-migrator
+          image: isikhi/go-rate-limiter:migrator-0.0.1
+          envFrom:
+            - secretRef:
+                name: goapp-secret
+            - secretRef:
+                name: pgdb-secret
+            - secretRef:
+                name: redis-secret
+        - name: db-seeder
+          image: isikhi/go-rate-limiter:seeder-0.0.1
+          envFrom:
+            - secretRef:
+                name: goapp-secret
+            - secretRef:
+                name: pgdb-secret
+            - secretRef:
+                name: redis-secret
+
+      containers:
+        - name: job-done
+          image: busybox
+          command: ['sh', '-c', 'echo "database migration and seed is completed."']
+      restartPolicy: Never
+  backoffLimit: 1

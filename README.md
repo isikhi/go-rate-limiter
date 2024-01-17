@@ -14,10 +14,6 @@ Follow these steps to get the project up and running in your local environment.
 - [ ] Improve logging mechanisms
 - [ ] Improve the rate limit duration value type(minutes, hour etc.)
 - [ ] Add rate limit unit/functional tests
-- [ ] Docker Hub push
-- [ ] K8s migration and seeder jobs
-- [ ] K8s application bootstrap
-- [ ] K8s readme documentations
 
 
 ### Prerequisites
@@ -81,28 +77,36 @@ Follow these steps to get the project up and running in your local environment.
     ```
 
 
-### Install & Run with kubernetes(minikube) [DRAFT - WIP]
+### Install & Run with kubernetes(minikube)
 1. Push to repository to docker hub or use mine.
-   - App: isikhi/go-rate-limiter:app-1.0.0
-   - Migrator: isikhi/go-rate-limiter:migrate-1.0.0
-   - Seeder: isikhi/go-rate-limiter:seed-1.0.0
+   - App: `isikhi/go-rate-limiter:app-0.0.1`
+   - Migrator: `isikhi/go-rate-limiter:migrate-0.0.1`
+   - Seeder: `isikhi/go-rate-limiter:seed-0.0.1`
+   
+   If you want to build your image follow this steps
+   ```bash
+   docker build -t your_username/your_repository:app-0.0.1 --build-arg MAIN_GO_FILE_PATH=./cmd/app/main.go .
+   docker push your_username/your_repository:app-0.0.1
 
-2. Run
-   1. Postgres
-      ```bash
-       ./k8s/postgres/apply.sh
-       ```
-   2. Redis
-      ```bash
-       ./k8s/postgres/apply.sh
-       ```
-   3. App
-      ```bash
-       ./k8s/postgres/apply.sh
-       ```
+   docker build -t your_username/your_repository:migrator-0.0.1 --build-arg MAIN_GO_FILE_PATH=./cmd/seed/main.go .
+   docker push your_username/your_repository:migrator-0.0.1
+
+   docker build -t your_username/your_repository:seeder-0.0.1 --build-arg MAIN_GO_FILE_PATH=./cmd/migrate/main.go .
+   docker push your_username/your_repository:seeder-0.0.1
+   ```
+
+2. Run:
+   This script will reload everything with kubectl. [kubectl alias](https://minikube.sigs.k8s.io/docs/start/) should have been set
+   
+   ```bash
+   /bin/bash /home/username/path/go-rate-limiter/k8s/deploy.sh
+   ```
+   PS: In database deployments, I added an additional sleep time of approximately 20-30 seconds to wait until the containers stand up, so that there will be no problems until the containers that do not have health checks stand up.   
+
 
 
 # How it works ? Test and Example Usage
+If you deploy to the minikube `minikube service list` take url's and use as base domain on below instructions
 
 1. Define Rate Limit Options
    Define rate limit options by referring to the example in [Rate Limit Example Http](./examples/rate-limit.http). You can find an HTTP request example that creates a client, token, and duration (in minutes).

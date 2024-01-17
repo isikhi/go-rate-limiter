@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-pod
+spec:
+  containers:
+    - name: ubuntu-container
+      image: ubuntu
+      command: ["/bin/sleep", "infinity"]
+      ports:
+        - name: http
+          containerPort: 3000
+      envFrom:
+        - secretRef:
+            name: goapp-secret
+        - secretRef:
+            name: pgdb-secret
+        - secretRef:
+            name: redis-secret

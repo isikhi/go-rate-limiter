@@ -59,6 +59,7 @@ func (u *RateLimiterUseCase) CheckRateLimit(ctx context.Context, clientId string
 	if rateLimit == nil {
 		rateLimit, err = u.rateLimitRepo.SetRateLimitTokens(ctx, clientId)
 		if err != nil {
+			log.Println(err)
 			return &rate_limiter.RateLimitSchema{}, err
 		}
 	}

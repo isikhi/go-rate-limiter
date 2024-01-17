@@ -1,5 +1,9 @@
-kubectl apply -f ./secret.yaml
-kubectl apply -f ./pv.yaml
-kubectl apply -f ./pvc.yaml
-kubectl apply -f ./deployment.yaml
-kubectl apply -f ./service.yaml
+function main() {
+  local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  kubectl apply -f "$script_dir/secret.yaml"
+  kubectl apply -f "$script_dir/pv.yaml"
+  kubectl apply -f "$script_dir/pvc.yaml"
+  kubectl apply -f "$script_dir/deployment.yaml"
+  kubectl apply -f "$script_dir/service.yaml"
+}
+main

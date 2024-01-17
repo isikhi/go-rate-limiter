@@ -29,6 +29,28 @@ type user struct {
 	Password  string
 }
 
+func userTableIsExistsCheck(m *Seed) bool {
+	for i := 0; i < 10; i++ {
+		fmt.Printf("User table is exists control #%d: ", i+1)
+		var result string
+		err := m.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')").Scan(&result)
+		if err != nil {
+			panic(err)
+		}
+
+		if result == "true" {
+			fmt.Println("User table is OK")
+			return true
+		} else {
+			fmt.Println("User table not exists. Retry:", time.Second)
+		}
+
+		// 1 saniye bekletme
+		time.Sleep(time.Second)
+	}
+	panic("User table not exists.")
+}
+
 func (m *Seed) SeedUsers() {
 	users := []user{
 		{
@@ -38,7 +60,7 @@ func (m *Seed) SeedUsers() {
 			Password:  randomAndWrite(16),
 		},
 	}
-
+	userTableIsExistsCheck(m)
 	for _, u := range users {
 		password, err := argon2id.CreateHash(u.Password, argon2id.DefaultParams)
 		if err != nil {

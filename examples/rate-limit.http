@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   "client_id": "TestClient1Min",
-  "token_count": 10,
+  "token_count": 5,
   "duration": 3
 }
 

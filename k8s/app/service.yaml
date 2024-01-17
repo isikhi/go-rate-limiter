@@ -1,14 +1,17 @@
 apiVersion: v1
-kind: Service                                 # Type of the kubernetes resource
+kind: Service
 metadata:
-  name: go-app                # Name of the Kubernetes resource
-  labels:                                     # Labels that will be applied to the resource
+  name: go-app
+  labels:
     app: go-app
 spec:
-  type: NodePort                              # Gives each node an external IP that’s accessible from outside the cluster and also opens a Port.
+  type: NodePort
   selector:
-    app: go-app               # Selects any Pod with labels `app=go-app`
+    app: go-app
   ports:
     - name: http
       port: 8080
-      targetPort: 8080
+      targetPort: 3000
+    - name: grpc
+      port: 8181
+      targetPort: 50051

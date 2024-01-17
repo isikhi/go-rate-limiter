@@ -121,6 +121,7 @@ func (r *RateLimitRepository) SetRateLimitTokens(ctx context.Context, clientId s
 	rateLimiterKey := getRateLimiterKey(clientId)
 	rateLimitOptions, err := r.getRateLimitOptionsForClient(ctx, clientId)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
 	if rateLimitOptions == nil {
@@ -183,15 +184,12 @@ func (r *RateLimitRepository) DecreaseRateLimitToken(ctx context.Context, client
 }
 func (r *RateLimitRepository) getRateLimitOptionsForClient(ctx context.Context, clientId string) (*rate_limiter.RateLimitOptionsSchema, error) {
 	rateLimiterOptionsByClientKey := getRateLimiterOptionsByClientKey(clientId)
-	data, err := r.redisClient.Get(ctx, rateLimiterOptionsByClientKey).Result()
-	if err != nil {
-		return nil, err
-	}
+	data, _ := r.redisClient.Get(ctx, rateLimiterOptionsByClientKey).Result()
 	if data == "" {
 		return nil, nil
 	}
 	var rateLimitOptions = rate_limiter.RateLimitOptionsSchema{}
-	err = json.Unmarshal([]byte(data), &rateLimitOptions)
+	err := json.Unmarshal([]byte(data), &rateLimitOptions)
 	if err != nil {
 		return nil, err
 	}
