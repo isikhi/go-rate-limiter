@@ -1,0 +1,17 @@
+# Examples of using this rate limit http api
+# for vscode users, install `REST Client` to use these example.
+### Create rate limit options
+POST http://localhost:3000/api/v1/rate-limit/options
+Content-Type: application/json
+
+{
+  "client_id": "TestClient1Min",
+  "token_count": 10,
+  "duration": 3
+}
+
+
+### List all rate limit options, no pagination provided
+GET http://localhost:3000/api/v1/rate-limit/options
+Accept: application/json
+

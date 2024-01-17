@@ -1,0 +1,241 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  default:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
+  list:
+    desc: Lists available commands
+    cmds:
+      - task -l
+
+  migrate:create:
+    desc: Creates .sql migration files (Up and Down). Set name by appending with 'NAME=name_of_file'
+    cmds:
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" create "{{.NAME}}" sql
+
+  migrate:
+    desc: Migrates UP the database
+    cmds:
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up
+
+  migrate:step:
+    desc: Migrates UP bt one step the database
+    cmds:
+      - goose -dir database/migrations $DB_DRIVER "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" up-by-one
+
+  migrate:rollback:
+    desc: Rollback the database by one step
+    cmds:
+      - goose -dir database/migrations postgres "user=$DB_USER password=$DB_PASS dbname=$DB_NAME host=$DB_HOST port=$DB_PORT sslmode=$DB_SSLMODE" down
+
+  run:
+    desc: Runs the app
+    cmds:
+      - task: swagger
+      - go run cmd/app/main.go
+    silent: true
+
+  dev:
+    desc: Hot reload. Watch for file changes and rebuild binary.
+    cmds:
+      - air
+    silent: true
+
+  routes:
+    desc: List all registered routes.
+    silent: true
+    cmds:
+      - go run cmd/route/main.go
+
+  build:
+    desc: Creates a compiled binary and copy configuration files into ./bin
+    vars:
+      GIT_TAG:
+        sh: git describe --abbrev=0 --tags
+      GIT_COMMIT:
+        sh: git rev-list -1 HEAD
+    cmds:
+      - task: check
+      - go build -ldflags="-X main.Version={{.GIT_TAG}}-{{.GIT_COMMIT}} -w -s"  -o app cmd/app/main.go
+      - mkdir -p bin
+      - mv app bin/
+      - cp .env bin
+    silent: false
+
+  check:
+    desc: Checks integrity of program
+    cmds:
+      - task generate
+      - task swagger
+      - task fmt
+      - task vet
+      - task lint
+      - task vuln
+      #- task test
+    silent: true
+
+  clean:
+    desc: Clears built files and tests
+    cmds:
+      - rm -rf ./bin/*
+      - rm -rf ./bin/.*
+      - task: test:clean:cache
+
+  tidy:
+    desc: Downloads dependencies and removes unused ones
+    cmds:
+      - go mod tidy
+
+  vet:
+    desc: Vets code
+    cmds:
+      - go vet ./...
+
+  lint:
+    desc: Uses golangci-lint
+    cmds:
+      - golangci-lint run
+
+  vuln:
+    desc: Run Go Vulnerability Check
+    cmds:
+      - govulncheck ./...
+
+  fmt:
+    desc: Reformat code
+    cmds:
+      - go fmt ./...
+
+  test:
+    desc: Test all code (unit and integration)
+    cmds:
+      - go test ./...
+
+  test:unit:
+    desc: Test only unit tests
+    cmds:
+      - go test -short ./...
+
+  test:integration:
+    desc: Test only integration tests
+    cmds:
+      - go test -run Integration ./...
+
+  test:verbose:
+    desc: Test all code with verbose mode
+    cmds:
+      - go test -v ./...
+
+  test:coverage:
+    desc: Perform test coverage
+    cmds:
+      - go test -cover ./...
+
+  test:slow:
+    desc: Find slow running tests
+    platforms: [ linux ]
+    cmds:
+      - go clean -testcache
+      - go test -v -json ./... | jq -r 'select(.Action == "pass" and .Test != null) | .Test + "," + (.Elapsed | tostring)'  | sort -r -k2 -n -t, | head
+
+  test:e2e:
+    desc: Run e2e test
+    dir: e2e
+    cmds:
+      - task: test:e2e:down # Ensures all containers are shut down for clean data directories
+      - docker-compose -f e2e/docker-compose.yml up --build
+    silent: true
+
+  test:e2e:down:
+    desc: Stops e2e test and remove the containers
+    dir: e2e
+    cmds:
+      - docker-compose -f e2e/docker-compose.yml down -v
+
+  race:
+    desc: Check race condition
+    cmds:
+      - go test -race ./...
+
+  test:clean:
+    desc: Clear tests cache
+    cmds:
+      - go clean -testcache
+
+  generate:
+    desc: Runs all //go:generate commands embedded in .go files
+    cmds:
+      - go generate ./...
+
+  swagger:
+    desc: Generates Swagger page for API reference
+    cmds:
+      - swag init -o internal/server/docs -g cmd/app/main.go
+
+  docker:build:
+    desc: Builds a Docker image a server container
+    cmds:
+      - cp .env env.prod
+      - docker build -t app/server -f Dockerfile .
+
+  docker:run:
+    desc: Runs the app Docker image as a Docker container
+    cmds:
+      - docker run -p 3080:3080 --rm -it --net=host --name server_container app/server
+
+  docker-compose:start:
+    desc: Runs server and database using docker-compose
+    cmds:
+      - docker-compose -f docker-compose.yml up --build --abort-on-container-exit
+
+  docker-compose:stop:
+    desc: Stops server and database using docker-compose
+    cmds:
+      - docker-compose -f docker-compose.yml down --volumes
+
+  install:tools:
+    desc: Install all optional cli tools
+    dir: scripts
+    cmds:
+      - task: install:golangci
+      - task: install:swagger
+      - task: install:goose
+      - task: install:mirip
+      - task: install:air
+      - task: install:vuln
+    silent: true
+
+  install:golangci:
+    desc: Install golangci linter
+    cmds:
+      - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+
+  install:swagger:
+    desc: Install swagger cli
+    cmds:
+      - go install github.com/swaggo/swag/cmd/swag@latest
+
+  install:mirip:
+    desc: Install mock generator
+    cmds:
+      - go install github.com/gmhafiz/mirip/cmd/mirip@latest
+
+  install:goose:
+    desc: Install golang migration tool
+    cmds:
+      - go install github.com/pressly/goose/v3/cmd/goose@latest
+
+  install:air:
+    desc: Install a hot reloader. Watch for file changes and automatically rebuilds binary
+    cmds:
+      - go install github.com/cosmtrek/air@latest
+
+  install:vuln:
+    desc: Install Go Vulnerability Check
+    cmds:
+      - go install golang.org/x/vuln/cmd/govulncheck@latest

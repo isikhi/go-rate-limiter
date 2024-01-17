@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  server:
+    image: "server"
+    container_name: "server_container"
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 0.0.0.0:${API_PORT}:${API_PORT}
+      - 0.0.0.0:${API_RPCPORT}:${API_RPCPORT}
+    networks:
+      - app-network
+    depends_on:
+      - redis
+      - postgres
+      - migrate_server
+      - seed_server
+
+  migrate_server:
+    image: "migrate_server"
+    container_name: "migrate_server_container"
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: /usr/bin/local/server/migrate
+    networks:
+      - app-network
+    depends_on:
+      - redis
+      - postgres
+
+  seed_server:
+    image: "seed_server"
+    container_name: "seed_server_container"
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: /usr/bin/local/server/seed
+    networks:
+      - app-network
+    depends_on:
+      - redis
+      - postgres
+      - migrate_server
+
+  postgres:
+    image: "postgres:16.0"
+    restart: always
+    container_name: "go8_postgres"
+    healthcheck:
+      test: pg_isready -U ${DB_USER}
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - 0.0.0.0:${DB_PORT}:5432
+    expose:
+      - "5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./scripts/create-db.sh:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
+
+  redis:
+    image: 'redis:7.2'
+    restart: always
+    ports:
+      - 0.0.0.0:${REDIS_PORT}:6379
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - app-network
+
+volumes:
+  postgres:
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge

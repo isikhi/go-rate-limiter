@@ -1,0 +1,7 @@
+.idea
+bin
+.data
+vendor
+.env
+sqlboiler.toml
+tmp

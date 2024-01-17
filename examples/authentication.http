@@ -1,0 +1,47 @@
+### register
+POST http://localhost:3080/api/v1/register
+Content-Type: application/json
+
+{
+  "email": "test@mail.com",
+  "password": "password"
+}
+
+### login
+POST http://localhost:3080/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "x#m8xEIbHjk+*b4#"
+}
+
+### protected route
+GET http://localhost:3080/api/v1/private
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+### own ID
+GET http://localhost:3080/api/v1/private/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ1c2VyIiwic3ViIjoiMSIsImV4cCI6MTcwMjIzNTc2OSwibmJmIjoxNzAyMjMyMTY5LCJpYXQiOjE3MDIyMzIxNjksImp0aSI6IjEifQ.uujRlA12H18X1uUPeiAV5E4FIf25zJR-1iB8j7Xx2ec
+
+### Get new CSRF token
+GET http://localhost:3080/api/v1/private/csrf
+Cookie: session=xeUM8VvNfm86MusODo8BlWkLbMQ0zB8vIKKOJpUQ12U;
+
+### logout
+POST http://localhost:3080/api/v1/logout
+Cookie: session=L-0ULBXxkJC-2DZ1Peu8dMSG3EiLz57PpQdqJSEeTSo;
+
+
+### login admin
+POST http://localhost:3080/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "<enter your generated password from seeder>"
+}
+
+### force logout
+POST http://localhost:3080/api/v1/private/logout/3
+Cookie: session=I9nV5AWyeBbImf7MCbZNb1MEQ1PlSaDDeZtG-x_6oo4

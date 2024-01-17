@@ -1,0 +1,23 @@
+info:
+  contact: {}
+paths:
+  /api/health:
+    get:
+      description: Hits this API to see if API is running in the server
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Checks if API is up
+  /api/health/readiness:
+    get:
+      description: Hits this API to see if both API and Database are running in the
+        server
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Checks if both API and Database are up
+swagger: "2.0"
