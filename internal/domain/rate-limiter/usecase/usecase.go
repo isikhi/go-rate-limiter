@@ -12,12 +12,12 @@ import (
 
 type RateLimiter interface {
 	CreateRateLimitOptions(ctx context.Context, rateLimitOpts *rate_limiter.CreateRateLimitOptionsRequest) (*rate_limiter.RateLimitOptionsSchema, error)
+	PatchRateLimitOptions(ctx context.Context, rateLimitOpts *rate_limiter.PatchRateLimitOptionsRequest) (*rate_limiter.RateLimitOptionsSchema, error)
 	ListRateLimitOptions(ctx context.Context) ([]*rate_limiter.RateLimitOptionsSchema, error)
 }
 
 type RateLimiterUseCase struct {
 	rateLimitRepo repository.RateLimitOptions
-	//	throttlePercentage int
 }
 
 func New(rateLimitRepo repository.RateLimitOptions) *RateLimiterUseCase {
@@ -25,12 +25,6 @@ func New(rateLimitRepo repository.RateLimitOptions) *RateLimiterUseCase {
 		rateLimitRepo: rateLimitRepo,
 	}
 }
-
-//func (u *RateLimiterUseCase) SetThrottlePercentage(percentage int) {
-//ask about dynamic throttle logic. rate limit service load or client load is it global or client specific etc.
-//	u.throttlePercentage = percentage
-//	rateLimit.RemainingToken = (u.throttlePercentage * rateLimit.RemainingToken) / 100
-//}
 
 func (u *RateLimiterUseCase) CreateRateLimitOptions(ctx context.Context, rateLimitOptions *rate_limiter.CreateRateLimitOptionsRequest) (*rate_limiter.RateLimitOptionsSchema, error) {
 	rateLimitOptsID, err := u.rateLimitRepo.CreateRateLimitOptions(ctx, rateLimitOptions)
@@ -42,6 +36,14 @@ func (u *RateLimiterUseCase) CreateRateLimitOptions(ctx context.Context, rateLim
 		return nil, err
 	}
 	return rateLimitOptsFound, err
+}
+
+func (u *RateLimiterUseCase) PatchRateLimitOptions(ctx context.Context, rateLimitOptions *rate_limiter.PatchRateLimitOptionsRequest) (*rate_limiter.RateLimitOptionsSchema, error) {
+	rateLimitOpts, err := u.rateLimitRepo.PatchRateLimitOptions(ctx, rateLimitOptions)
+	if err != nil {
+		return nil, err
+	}
+	return rateLimitOpts, err
 }
 
 func (u *RateLimiterUseCase) ListRateLimitOptions(ctx context.Context) ([]*rate_limiter.RateLimitOptionsSchema, error) {
@@ -63,7 +65,8 @@ func (u *RateLimiterUseCase) CheckRateLimit(ctx context.Context, clientId string
 			return &rate_limiter.RateLimitSchema{}, err
 		}
 	}
-	if rateLimit.RemainingToken <= 0 {
+
+	if rateLimit.RemainingTokens <= 0 {
 		return rateLimit, errors.New(string(constants.ErrorRateLimitExceeded))
 	}
 	rateLimit, err = u.rateLimitRepo.DecreaseRateLimitToken(ctx, clientId)

@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS rate_limit_options
     id bigserial,
     client_id varchar(255) not null,
     token_count integer not null,
-    duration integer not null,
+    duration_in_seconds integer not null,
+    throttle_percentage integer default 0 not null,
     created_at timestamp with time zone default current_timestamp,
     primary key (id)
 );

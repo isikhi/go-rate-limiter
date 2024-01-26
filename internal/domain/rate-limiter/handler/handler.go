@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -51,6 +52,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	respond.Json(w, http.StatusCreated, rlo)
 }
+
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 
 	var rateLimitOpts []*rate_limiter.RateLimitOptionsSchema
@@ -67,11 +69,36 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	rateLimitOpts = resp
 
-	/** .RESOURCES ile alakalı sorun olabilir. */
 	if err != nil {
 		respond.Error(w, http.StatusInternalServerError, message.ErrFormingResponse)
 		return
 	}
 
 	respond.Json(w, http.StatusOK, rateLimitOpts)
+}
+
+func (h *Handler) Patch(w http.ResponseWriter, r *http.Request) {
+	var rateLimitOpts rate_limiter.PatchRateLimitOptionsRequest
+	err := json.NewDecoder(r.Body).Decode(&rateLimitOpts)
+	if err != nil {
+		respond.Error(w, http.StatusBadRequest, err)
+		return
+	}
+
+	errs := validate.Validate(h.validate, rateLimitOpts)
+	if errs != nil {
+		respond.Errors(w, http.StatusBadRequest, errs)
+		return
+	}
+	rlo, err := h.useCase.PatchRateLimitOptions(r.Context(), &rateLimitOpts)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			respond.Error(w, http.StatusBadRequest, message.ErrBadRequest)
+			return
+		}
+		respond.Error(w, http.StatusInternalServerError, err)
+		return
+	}
+	respond.Json(w, http.StatusOK, rlo)
 }

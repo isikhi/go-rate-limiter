@@ -1,5 +1,8 @@
 version: '3.8'
-
+#Also you can use these if you do not want to build own local
+#server: `isikhi/go-rate-limiter:app-0.1.0`
+#migrate_server: `isikhi/go-rate-limiter:migrate-0.1.0`
+#seed_server: `isikhi/go-rate-limiter:seed-0.1.0`
 services:
   server:
     image: "server"

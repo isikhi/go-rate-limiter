@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: go-app
-          image: isikhi/go-rate-limiter:app-0.0.1
+          image: isikhi/go-rate-limiter:app-0.1.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

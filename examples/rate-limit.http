@@ -6,8 +6,17 @@ Content-Type: application/json
 
 {
   "client_id": "TestClient1Min",
-  "token_count": 5,
-  "duration": 3
+  "token_count": 20,
+  "duration_in_seconds": 10
+}
+
+### Dynamically update by load example (actually it is just patch for overall object)
+PATCH http://localhost:3000/api/v1/rate-limit/options
+Content-Type: application/json
+
+{
+  "client_id": "TestClient1Min",
+  "throttle_percentage": 40
 }
 
 

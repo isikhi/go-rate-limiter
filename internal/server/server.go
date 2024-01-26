@@ -281,7 +281,6 @@ func (s *Server) PrintAllRegisteredRoutes(exceptions ...string) {
 			fmt.Printf("%s", gchalk.White(fmt.Sprintf("%-8s", method)))
 		}
 
-		//fmt.Printf("%-25s %60s\n", path, getHandler(getModName(), handler))
 		fmt.Printf("%s", strPad(path, 25, "-", "RIGHT"))
 		fmt.Printf("%s\n", strPad(getHandler(getModName(), handler), 60, "-", "LEFT"))
 

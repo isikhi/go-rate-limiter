@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"fmt"
 	"github.com/isikhi/go-rate-limiter/config"
 	"net"
 	"net/http"
@@ -31,11 +30,9 @@ func AuthenticateWithJWT(cfg config.Api) func(http.Handler) http.Handler {
 				return
 			}
 			bearerExtractedTokenPayload := strings.TrimPrefix(bearerToken, "Bearer ")
-			fmt.Printf("before parse => %v ", bearerExtractedTokenPayload)
 			token, err := jwt.Parse(bearerExtractedTokenPayload, func(token *jwt.Token) (interface{}, error) {
 				return []byte(cfg.JWTSecret), nil
 			})
-			fmt.Printf("token -> %v error evgin -> %v", token.Valid, err)
 			if err != nil || !token.Valid {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return

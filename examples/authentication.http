@@ -1,3 +1,4 @@
+### DO NOT USE THIS AUTHENTICATION HTTP FILE. IT IS NOT IMPLEMENTED YET.
 ### register
 POST http://localhost:3080/api/v1/register
 Content-Type: application/json

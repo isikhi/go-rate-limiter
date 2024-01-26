@@ -10,9 +10,13 @@ import (
 
 func RegisterHTTPEndPoints(router *chi.Mux, validator *validator.Validate, uc usecase.RateLimiterUseCase) *Handler {
 	h := NewHandler(uc, validator)
+	/**
+	Kind of Authentication would be great for below routes.
+	*/
 	router.Route("/api/v1/rate-limit/options", func(router chi.Router) {
 		router.Get("/", h.List)
 		router.Post("/", h.Create)
+		router.Patch("/", h.Patch)
 	})
 	return h
 }

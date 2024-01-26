@@ -22,7 +22,6 @@ func (s *GrpcHandler) CheckRateLimit(ctx context.Context, in *pb.CheckRequest) (
 	metric.GrpcRequestsTotal.WithLabelValues("CheckRateLimit").Inc()
 	checkRateLimit, err := s.useCase.CheckRateLimit(ctx, in.ClientId)
 	if err != nil {
-
 		switch err.Error() {
 		case string(constants.ErrorRateLimitOptionsNotFound):
 			metric.RateLimitNotFoundRequestsTotal.WithLabelValues(in.ClientId).Inc()
@@ -36,13 +35,13 @@ func (s *GrpcHandler) CheckRateLimit(ctx context.Context, in *pb.CheckRequest) (
 		}
 	}
 
-	if checkRateLimit != nil && checkRateLimit.RemainingToken > 0 {
+	if checkRateLimit != nil && checkRateLimit.RemainingTokens > 0 {
 		metric.RateLimitProcessedRequestsTotal.WithLabelValues(in.ClientId).Inc()
 		return &pb.CheckResponse{
-			ClientId:       checkRateLimit.ClientID,
-			RemainingToken: int64(checkRateLimit.RemainingToken),
-			MaxToken:       int64(checkRateLimit.MaxToken),
-			ExpireAt:       checkRateLimit.ExpireAt,
+			ClientId:        checkRateLimit.ClientID,
+			RemainingTokens: int64(checkRateLimit.RemainingTokens),
+			MaxToken:        int64(checkRateLimit.MaxToken),
+			ExpireAt:        checkRateLimit.ExpireAt,
 		}, nil
 	}
 	metric.RateLimitExceededRequestsTotal.WithLabelValues(in.ClientId).Inc()
