@@ -7,7 +7,7 @@ Content-Type: application/json
 {
   "client_id": "TestClient1Min",
   "token_count": 20,
-  "duration_in_seconds": 10
+  "duration_in_seconds": 100
 }
 
 ### Dynamically update by load example (actually it is just patch for overall object)

@@ -34,7 +34,7 @@ Follow these steps to get the project up and running in your local environment.
 
 2. Configuration(Environment)
    ```bash
-    cp ./.env.example .env
+    cp ./env.example .env
     ```
 
 3. Install dependencies:
@@ -42,15 +42,16 @@ Follow these steps to get the project up and running in your local environment.
     ```bash
    go mod download
     ```
+4. (Optionally) If you run `task check` command for it will check general things like schemas, test, lint, swagger etc.(take a look: [Taskfile.yml](./Taskfile.yml))
 
-4. Run Migrations and Seed DB
+5. Run Migrations and Seed DB
 
     ```bash
     go run cmd/migrate/main.go
     go run cmd/seed/main.go
    ```
 
-5. Run App
+6. Run App
 
     ```bash
     go run cmd/app/main.go

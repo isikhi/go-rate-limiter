@@ -76,7 +76,7 @@ tasks:
       - task vet
       - task lint
       - task vuln
-      #- task test
+      - task test
     silent: true
 
   clean:
